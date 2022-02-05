@@ -46,15 +46,6 @@ public class Bot {
         if(myCar.damage == 5) {
             return FIX;
         }
-        //Accelerate first if going to slow
-        if(myCar.speed <= 3) {
-            return ACCELERATE;
-        }
-
-        //Basic fix logic
-        if(myCar.damage >= 5) {
-            return FIX;
-        }
 
         //Basic avoidance logic
         if (blocks.contains(Terrain.MUD) || nextBlocks.contains(Terrain.WALL)) {
@@ -67,20 +58,64 @@ public class Bot {
             }
         }
 
+
         //Basic improvement logic
         if (hasPowerUp(PowerUps.BOOST, myCar.powerups)) {
             return BOOST;
         }
 
-        //Basic aggression logic
-        if (myCar.speed == maxSpeed) {
-            if (hasPowerUp(PowerUps.OIL, myCar.powerups)) {
-                return OIL;
-            }
-            if (hasPowerUp(PowerUps.EMP, myCar.powerups)) {
+        //Accelerate first if going to slow
+        if(myCar.speed <= 3) {
+            return ACCELERATE;
+        }
+
+        //Basic fix logic
+        if(myCar.damage >= 2 && myCar.speed <= 3) {
+            return FIX;
+        }
+
+        if(hasPowerUp(PowerUps.EMP, myCar.powerups) && myCar.position.block < opponent.position.block){
+            if(Math.abs(myCar.position.lane - opponent.position.lane) <= 1){
+                //jangan sampe collision, harus diimplemen
                 return EMP;
             }
         }
+
+        if(hasPowerUp(PowerUps.OIL, myCar.powerups)){
+            if(myCar.position.lane == opponent.position.lane){
+                if(myCar.position.block > opponent.position.block && myCar.position.block <= opponent.position.block + 15){
+                    return OIL;
+                }
+            }
+        }
+
+        //Pake TWEET
+
+        if(countPowerUp(PowerUps.OIL, myCar.powerups) > 3){
+            return OIL;
+        }
+
+        // //Basic avoidance logic
+        // if (blocks.contains(Terrain.MUD) || nextBlocks.contains(Terrain.WALL)) {
+        //     if (hasPowerUp(PowerUps.LIZARD, myCar.powerups)) {
+        //         return LIZARD;
+        //     }
+        //     if (nextBlocks.contains(Terrain.MUD) || nextBlocks.contains(Terrain.WALL)) {
+        //         int i = random.nextInt(directionList.size());
+        //         return directionList.get(i);
+        //     }
+        // }
+
+
+        // //Basic aggression logic
+        // if (myCar.speed == maxSpeed) {
+        //     if (hasPowerUp(PowerUps.OIL, myCar.powerups)) {
+        //         return OIL;
+        //     }
+        //     if (hasPowerUp(PowerUps.EMP, myCar.powerups)) {
+        //         return EMP;
+        //     }
+        // }
 
         return ACCELERATE;
     }
@@ -92,6 +127,16 @@ public class Bot {
             }
         }
         return false;
+    }
+
+    private int countPowerUp(PowerUps powerUpToCheck, PowerUps[] available) {
+        int count = 0;
+        for (PowerUps powerUp: available) {
+            if (powerUp.equals(powerUpToCheck)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
