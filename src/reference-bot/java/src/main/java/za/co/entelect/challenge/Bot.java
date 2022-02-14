@@ -32,10 +32,11 @@ public class Bot {
     private final static Command TURN_LEFT = new ChangeLaneCommand(-1);
     
     private double weightPosition = 10;
-    private double weightSpeed = 23;
-    private double weightDamage = -76;
-    private double weightBoost = 10;
+    private double weightSpeed = 23.1;
+    private double weightDamage = -75.7;
+    private double weightBoost = 10.2;
     private double weightLizard = 35;
+    private double weightEMP = 41.6;
     
     private int[] nextSpeed = {3, 0, 0, 5, 0, 6, 8, 0, 9, 9, 0, 0, 0, 0, 0, 15};
     private int[] prevSpeed = {3, 0, 0, 3, 0, 3, 5, 0, 6, 8, 0, 0, 0, 0, 0, 9};
@@ -55,28 +56,40 @@ public class Bot {
         if(myCar.damage >= 5) {
             return FIX;
         }
-
+        if(myCar.speed <= 0) {
+            return accelerate(gameState);
+        }
         if (myCar.position.block < opponent.position.block){
             // emp jedar jedar atau jalan
-            int acc = nextSpeed[myCar.speed] - opponent.speed;
-            if (hasPowerUp(PowerUps.BOOST, myCar.powerups)){
-                acc = 15 - opponent.speed;
-            }
-            //emp perlu merhatiin speed kita setelah lurus kalo ada nabrak
-            int emp = myCar.speed - 3;
-            if (acc > emp){
+            if(myCar.speed > opponent.speed){
                 return move(gameState);
             }
             else{
-                if (hasPowerUp(PowerUps.EMP, myCar.powerups)){
-                    //speed minimum supaya worth it nembak emp
-                    if (Math.abs(myCar.position.lane - opponent.position.lane) <= 1 
-                        && countWeight(myCar.position.lane, myCar.position.block, myCar.speed, gameState) < 50){
-                        return EMP;
-                    }
+                if (Math.abs(myCar.position.lane - opponent.position.lane) <= 1 && hasPowerUp(PowerUps.EMP, myCar.powerups)){
+                    return EMP;
                 }
                 return move(gameState);
             }
+            // int acc = nextSpeed[myCar.speed] - opponent.speed;
+            // if (hasPowerUp(PowerUps.BOOST, myCar.powerups)){
+            //     acc = 15 - opponent.speed;
+            // }
+            // //emp perlu merhatiin speed kita setelah lurus kalo ada nabrak
+            // int emp = myCar.speed - 3;
+            // if (acc > emp){
+            //     return move(gameState);
+            // }
+            // else{
+            //     if (hasPowerUp(PowerUps.EMP, myCar.powerups)){
+            //         //speed minimum supaya worth it nembak emp
+            //         if (Math.abs(myCar.position.lane - opponent.position.lane) <= 1 
+            //             && countWeight(myCar.position.lane, myCar.position.block, myCar.speed, gameState) < 50){
+            //                 // COUNTWEIGHTNYA UDAH DI UPDATE
+            //             return EMP;
+            //         }
+            //     }
+            //     return move(gameState);
+            // }
         }
         else if (myCar.position.block == opponent.position.block) {
             return move(gameState);
@@ -98,16 +111,6 @@ public class Bot {
             }
         }
         return false;
-    }
-
-    private int countPowerUp(PowerUps powerUpToCheck, PowerUps[] available) {
-        int count = 0;
-        for (PowerUps powerUp: available) {
-            if (powerUp.equals(powerUpToCheck)) {
-                count++;
-            }
-        }
-        return count;
     }
 
     private Command accelerate(GameState gameState){
@@ -146,12 +149,23 @@ public class Bot {
 
     private Command move(GameState gameState){
         Car myCar = gameState.player;
-        double weightKiri = countWeight(myCar.position.lane - 1, myCar.position.block - 1, myCar.speed, gameState),
-            weightLurus = countWeight(myCar.position.lane, myCar.position.block, myCar.speed, gameState),
-            weightKanan = countWeight(myCar.position.lane + 1, myCar.position.block - 1, myCar.speed, gameState),
-            weightUjungTengah = countWeightLizard(myCar.position.lane, myCar.position.block, myCar.speed, gameState),
-            weightAccelerate = countWeight(myCar.position.lane, myCar.position.block, nextSpeed[myCar.speed], gameState),
-            weightDecelerate = countWeight(myCar.position.lane, myCar.position.block, prevSpeed[myCar.speed], gameState);
+        int sepid = myCar.speed;
+        int sepidEkseleret = myCar.speed;
+        if (myCar.speed == 15 && myCar.boostCounter == 1){
+            sepid = 9;
+        }
+        if ((myCar.speed == 9 || myCar.speed == 8) && myCar.damage == 0){
+            sepidEkseleret = 15;
+        }
+        else {
+            sepidEkseleret = nextSpeed[sepid];
+            }
+        double weightKiri = countWeight(myCar.position.lane - 1, myCar.position.block - 1, sepid, gameState),
+            weightLurus = countWeight(myCar.position.lane, myCar.position.block, sepid, gameState),
+            weightKanan = countWeight(myCar.position.lane + 1, myCar.position.block - 1, sepid, gameState),
+            weightUjungTengah = countWeightLizard(myCar.position.lane, myCar.position.block, sepid, gameState),
+            weightAccelerate = countWeight(myCar.position.lane, myCar.position.block, sepidEkseleret, gameState),
+            weightDecelerate = countWeight(myCar.position.lane, myCar.position.block, prevSpeed[sepid], gameState);
         
         if (weightAccelerate <= weightKiri && weightAccelerate <= weightKanan && weightAccelerate <= weightUjungTengah
         && weightAccelerate <= weightLurus && weightAccelerate <= weightDecelerate){
@@ -216,7 +230,7 @@ public class Bot {
         
         List<Lane[]> map = gameState.lanes;
         int startBlock = map.get(0)[0].position.block;
-        int totalDamage = 0, speedAkhir = speed, totalMaju = 0, boostBlock = 0, lizardBlock = 0;
+        int totalDamage = 0, speedAkhir = speed, totalMaju = 0, boostBlock = 0, lizardBlock = 0, empBlock = 0;
         Lane[] laneList = map.get(lane - 1);
 
 
@@ -249,13 +263,17 @@ public class Bot {
             if (laneList[i].terrain == Terrain.LIZARD) {
                 lizardBlock++;
             }
+            if (laneList[i].terrain == Terrain.EMP) {
+                empBlock++;
+            }
         }
 
         double laneWeight = totalDamage * weightDamage
                           + speedAkhir * weightSpeed
                           + totalMaju * weightPosition
                           + boostBlock * weightBoost
-                          + lizardBlock * weightLizard;
+                          + lizardBlock * weightLizard
+                          + empBlock * weightEMP;
         return -laneWeight;
     }
 
@@ -264,7 +282,7 @@ public class Bot {
         
         List<Lane[]> map = gameState.lanes;
         int startBlock = map.get(0)[0].position.block;
-        int totalDamage = 0, speedAkhir = speed, totalMaju = 0, boostBlock = 0, lizardBlock = 0;
+        int totalDamage = 0, speedAkhir = speed, totalMaju = 0, boostBlock = 0, lizardBlock = 0, empBlock = 0;
         Lane[] laneList = map.get(lane - 1);
 
 
@@ -298,11 +316,15 @@ public class Bot {
         if (laneList[numBlock].terrain == Terrain.LIZARD) {
             lizardBlock++;
         }
+        if (laneList[numBlock].terrain == Terrain.EMP) {
+            empBlock++;
+        }
         double laneWeight = totalDamage * weightDamage
                           + speedAkhir * weightSpeed
                           + totalMaju * weightPosition
                           + boostBlock * weightBoost
-                          + lizardBlock * weightLizard;
+                          + lizardBlock * weightLizard
+                          + empBlock * weightEMP;
         return -laneWeight;
     }
 }
