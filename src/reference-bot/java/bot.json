@@ -3,6 +3,6 @@
 	"email": "John.Doe@example.com",
 	"nickName": "DipaRacing",
 	"botLocation": "/target",
-	"botFileName": "java-reference-bot-jar-with-dependencies.jar",
+	"botFileName": "Diparacing-bot-jar-with-dependencies.jar",
 	"botLanguage": "java"
 }
