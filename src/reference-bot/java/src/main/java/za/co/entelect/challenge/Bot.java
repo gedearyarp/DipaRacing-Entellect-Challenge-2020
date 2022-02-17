@@ -35,8 +35,9 @@ public class Bot {
     private double weightSpeed = 24;
     private double weightDamage = -76;
     private double weightBoost = 102;
-    private double weightLizard = 35;
+    private double weightLizard = 40;
     private double weightEMP = 41;
+    private double weightTweet = 20;
     
     private int[] nextSpeed = {3, 0, 0, 5, 0, 6, 8, 0, 9, 9, 0, 0, 0, 0, 0, 15};
     private int[] prevSpeed = {3, 0, 0, 3, 0, 3, 5, 0, 6, 8, 0, 0, 0, 0, 0, 9};
@@ -60,27 +61,19 @@ public class Bot {
             return accelerate(gameState);
         }
         if (myCar.position.block < opponent.position.block){
-            // emp jedar jedar atau jalan
-            if(myCar.speed > opponent.speed){
-                return move(gameState);
-            }
-            else{
-                if (Math.abs(myCar.position.lane - opponent.position.lane) <= 1 && hasPowerUp(PowerUps.EMP, myCar.powerups)){
-                    return EMP;
-                }
-                return move(gameState);
-            }
-        }
-        else if (myCar.position.block == opponent.position.block) {
+            // if(myCar.speed >= opponent.speed){
+            //     return move(gameState);
+            // }
+            // else{
+            //     if (Math.abs(myCar.position.lane - opponent.position.lane) <= 1 && hasPowerUp(PowerUps.EMP, myCar.powerups)){
+            //         return EMP;
+            //     }
+            //     return move(gameState);
+            // }
             return move(gameState);
         }
-        else if (myCar.position.block <= opponent.position.block + 20){
-            //pake oil
-            return moveOli(gameState);
-        }
         else {
-            //pake tweet
-            return moveTwt(gameState);
+            return move(gameState);
         }
     }
 
@@ -115,16 +108,11 @@ public class Bot {
             else if (myCar.damage == 0 && hasPowerUp(PowerUps.BOOST, myCar.powerups) && myCar.boostCounter != 0){
                 return offensive(gameState);
             }
+            else if(myCar.damage == 0 && !hasPowerUp(PowerUps.BOOST, myCar.powerups) && myCar.speed == 9){
+                return offensive(gameState);
+            }
             else return ACCELERATE;
         }
-        // if(hasPowerUp(PowerUps.BOOST, myCar.powerups)){
-        //     if (myCar.damage == 0){
-        //         return BOOST;
-        //     }
-        //     else {
-        //         return FIX;
-        //     }
-        // }
     }
 
     private Command move(GameState gameState){
@@ -151,7 +139,7 @@ public class Bot {
         && weightAccelerate <= weightLurus && weightAccelerate <= weightDecelerate){
             return accelerate(gameState);
         }
-        if (weightUjungTengah <= weightKanan && weightUjungTengah <= weightKiri && weightUjungTengah <= weightLurus
+        if (weightUjungTengah <= weightKanan && weightUjungTengah <= weightKiri && weightUjungTengah < weightLurus
             && weightUjungTengah <= weightDecelerate && hasPowerUp(PowerUps.LIZARD, myCar.powerups)){
             return LIZARD;
         }
@@ -175,107 +163,10 @@ public class Bot {
         else return DECELERATE;
     }
 
-    private Command moveOli(GameState gameState){
-        Car myCar = gameState.player;
-        int sepid = myCar.speed;
-        int sepidEkseleret = myCar.speed;
-        if (myCar.speed == 15 && myCar.boostCounter == 1){
-            sepid = 9;
-        }
-        if ((myCar.speed == 9 || myCar.speed == 8) && myCar.damage == 0){
-            sepidEkseleret = 15;
-        }
-        else {
-            sepidEkseleret = nextSpeed[sepid];
-            }
-        double weightKiri = countWeight(myCar.position.lane - 1, myCar.position.block - 1, sepid, gameState),
-            weightLurus = countWeight(myCar.position.lane, myCar.position.block, sepid, gameState),
-            weightKanan = countWeight(myCar.position.lane + 1, myCar.position.block - 1, sepid, gameState),
-            weightUjungTengah = countWeightLizard(myCar.position.lane, myCar.position.block, sepid, gameState),
-            weightAccelerate = countWeight(myCar.position.lane, myCar.position.block, sepidEkseleret, gameState),
-            weightDecelerate = countWeight(myCar.position.lane, myCar.position.block, prevSpeed[sepid], gameState);
-        
-        if (weightAccelerate <= weightKiri && weightAccelerate <= weightKanan && weightAccelerate <= weightUjungTengah
-        && weightAccelerate <= weightLurus && weightAccelerate <= weightDecelerate){
-            return accelerate(gameState);
-        }
-        if (weightUjungTengah <= weightKanan && weightUjungTengah <= weightKiri && weightUjungTengah <= weightLurus
-            && weightUjungTengah <= weightDecelerate && hasPowerUp(PowerUps.LIZARD, myCar.powerups)){
-            return LIZARD;
-        }
-        else if (weightAccelerate <= weightKiri && weightAccelerate <= weightKanan && weightAccelerate <= weightLurus 
-        && weightAccelerate <= weightDecelerate){
-            return accelerate(gameState);
-        }
-        else if (weightLurus <= weightKanan && weightLurus <= weightKiri && weightLurus <= weightDecelerate){
-            return OIL;
-        }
-        else if (weightKanan == weightKiri && weightKiri <= weightDecelerate){
-            if (myCar.position.lane <= 2) return TURN_RIGHT;
-            else return TURN_LEFT;
-        }
-        else if (weightKanan < weightKiri && weightKanan <= weightDecelerate){
-            return TURN_RIGHT;
-        }
-        else if (weightKiri < weightKanan && weightKiri <= weightDecelerate){
-            return TURN_LEFT;
-        }
-        else return DECELERATE;
-    }
-
-    private Command moveTwt(GameState gameState){
-        Car myCar = gameState.player;
-        int sepid = myCar.speed;
-        int sepidEkseleret = myCar.speed;
-        if (myCar.speed == 15 && myCar.boostCounter == 1){
-            sepid = 9;
-        }
-        if ((myCar.speed == 9 || myCar.speed == 8) && myCar.damage == 0){
-            sepidEkseleret = 15;
-        }
-        else {
-            sepidEkseleret = nextSpeed[sepid];
-            }
-        double weightKiri = countWeight(myCar.position.lane - 1, myCar.position.block - 1, sepid, gameState),
-            weightLurus = countWeight(myCar.position.lane, myCar.position.block, sepid, gameState),
-            weightKanan = countWeight(myCar.position.lane + 1, myCar.position.block - 1, sepid, gameState),
-            weightUjungTengah = countWeightLizard(myCar.position.lane, myCar.position.block, sepid, gameState),
-            weightAccelerate = countWeight(myCar.position.lane, myCar.position.block, sepidEkseleret, gameState),
-            weightDecelerate = countWeight(myCar.position.lane, myCar.position.block, prevSpeed[sepid], gameState);
-        
-        if (weightAccelerate <= weightKiri && weightAccelerate <= weightKanan && weightAccelerate <= weightUjungTengah
-        && weightAccelerate <= weightLurus && weightAccelerate <= weightDecelerate){
-            return accelerate(gameState);
-        }
-        if (weightUjungTengah <= weightKanan && weightUjungTengah <= weightKiri && weightUjungTengah <= weightLurus
-            && weightUjungTengah <= weightDecelerate && hasPowerUp(PowerUps.LIZARD, myCar.powerups)){
-            return LIZARD;
-        }
-        else if (weightAccelerate <= weightKiri && weightAccelerate <= weightKanan && weightAccelerate <= weightLurus 
-        && weightAccelerate <= weightDecelerate){
-            return accelerate(gameState);
-        }
-        else if (weightLurus <= weightKanan && weightLurus <= weightKiri && weightLurus <= weightDecelerate){
-            return new TweetCommand(gameState.opponent.position.lane, gameState.opponent.position.block + gameState.opponent.speed + 5);
-        }
-        else if (weightKanan == weightKiri && weightKiri <= weightDecelerate){
-            if (myCar.position.lane <= 2) return TURN_RIGHT;
-            else return TURN_LEFT;
-        }
-        else if (weightKanan < weightKiri && weightKanan <= weightDecelerate){
-            return TURN_RIGHT;
-        }
-        else if (weightKiri < weightKanan && weightKiri <= weightDecelerate){
-            return TURN_LEFT;
-        }
-        else return DECELERATE;
-    }
-
-
     private Command offensive(GameState gameState){
         Car myCar = gameState.player;
         Car opponent = gameState.opponent;
-        
+    
         if (myCar.position.block < opponent.position.block){
             if (hasPowerUp(PowerUps.EMP, myCar.powerups)){
                 //speed minimum supaya worth it nembak emp
@@ -283,22 +174,20 @@ public class Bot {
                     return EMP;
                 }
             }
+            return DO_NOTHING;
         }
         else if (myCar.position.block == opponent.position.block) {
             return DO_NOTHING;
         }
-        else if (myCar.position.block <= opponent.position.block + 20){
+        else {
+            if (hasPowerUp(PowerUps.TWEET, myCar.powerups) && opponent.position.block + nextSpeed[opponent.speed] + 1 <= myCar.position.block) {
+                return new TweetCommand(opponent.position.lane, opponent.position.block + nextSpeed[opponent.speed] + 1);
+            }
             if(hasPowerUp(PowerUps.OIL, myCar.powerups)){
                 return OIL;
             }
+            return DO_NOTHING;
         }
-        else {
-            return new TweetCommand(opponent.position.lane, opponent.position.block + opponent.speed + 5);
-            // if(countPowerUp(PowerUps.OIL, myCar.powerups) > 3){
-            //     return OIL;
-            // }
-        }
-        return DO_NOTHING;
     }
 
     private double countWeight(int lane, int block, int speed, GameState gameState) {
@@ -306,13 +195,19 @@ public class Bot {
         
         List<Lane[]> map = gameState.lanes;
         int startBlock = map.get(0)[0].position.block;
-        int totalDamage = 0, speedAkhir = speed, totalMaju = 0, boostBlock = 0, lizardBlock = 0, empBlock = 0;
+        int totalDamage = 0, speedAkhir = speed, totalMaju = 0, boostBlock = 0, lizardBlock = 0, empBlock = 0, twtBlock = 0;
         Lane[] laneList = map.get(lane - 1);
-
+        int blockAkhirOpp = gameState.opponent.speed + gameState.opponent.position.block - startBlock;
+        if(gameState.opponent.position.block < gameState.player.position.block || lane != gameState.opponent.position.lane) blockAkhirOpp = -1;
 
         for (int i = block - startBlock + 1; i <= block - startBlock + speed; i++) {
             if (laneList[i].terrain == Terrain.FINISH) {
                 totalMaju = 9999;
+                break;
+            }
+            if (i == blockAkhirOpp) {
+                totalMaju = i - (block - startBlock) - 1;
+                speedAkhir = gameState.opponent.speed;
                 break;
             }
             if (laneList[i].isTruck) {
@@ -342,6 +237,9 @@ public class Bot {
             if (laneList[i].terrain == Terrain.EMP) {
                 empBlock++;
             }
+            if (laneList[i].terrain == Terrain.TWEET) {
+                twtBlock++;
+            }
         }
 
         double laneWeight = totalDamage * weightDamage
@@ -349,7 +247,8 @@ public class Bot {
                           + totalMaju * weightPosition
                           + boostBlock * weightBoost
                           + lizardBlock * weightLizard
-                          + empBlock * weightEMP;
+                          + empBlock * weightEMP
+                          + twtBlock * weightTweet;
         return -laneWeight;
     }
 
@@ -364,7 +263,7 @@ public class Bot {
 
         for (int i = block - startBlock + 1; i <= block - startBlock + speed; i++) {
             if (laneList[i].terrain == Terrain.FINISH) {
-                return -9999;
+                return -999999;
             }
         }
 
