@@ -1,8 +1,0 @@
-{
-	"author": "Dipa Racing",
-	"email": "John.Doe@example.com",
-	"nickName": "DipaRacing",
-	"botLocation": "/target",
-	"botFileName": "Diparacing-bot-jar-with-dependencies.jar",
-	"botLanguage": "java"
-}
