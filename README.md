@@ -1,4 +1,4 @@
-# Mandalika Pertamina™ Dipa Racing
+# Dipa Racing - Entellect Challenge 2020
 
 ## Greedy Algorithm
 Strategi greedy pada alternatif ini adalah pada setiap langkah melihat block mana saja yang akan dilewati. Terdapat beberapa kasus untuk konfigurasi block yang akan dilewati yaitu ketika melakukan TURN_LEFT, TURN_RIGHT, USE_LIZARD, ACCELERATE, DECCELERATE, USE_BOOST, dan command sisanya yang akan membuat mobil maju dengan speed sekarang. Jadi terdapat 7 kemungkinan kombinasi block yang dilewati dalam 1 turn. Kombinasi block ini akan diberi weight setiap blocknya. Parameter yang diperhatikan antara lain adalah kondisi mobil setelah melewati block-block tersebut seperti berapakah speed akhir mobil, damage akhir mobil, jumlah block maju, dan apakah terdapat boost pada block tersebut. Pemilihan command didasarkan pada yang memiliki weight terbaik, jika weight lurus (tanpa ACCELERATE) yang paling baik baru pilih command menyerang terbaik.
