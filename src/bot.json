@@ -1,8 +1,8 @@
 {
-	"author": "Dipa Racing",
-	"email": "John.Doe@example.com",
+	"author": "Mandalika Pertamina Dipa Racing",
+	"email": "dipa.racing@example.com",
 	"nickName": "DipaRacing",
 	"botLocation": "/target",
-	"botFileName": "Diparacing-bot-jar-with-dependencies.jar",
+	"botFileName": "Mandalika_Pertamina_Dipa_Racing.jar",
 	"botLanguage": "java"
 }
