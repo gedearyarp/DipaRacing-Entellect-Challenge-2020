@@ -38,6 +38,7 @@ Bot baru akan melakukan offensive ketika arah yang dipilih lebih baik lurus tanp
 * Visualizers: https://entelect-replay.raezor.co.za/
 
 ## Video
+* https://youtu.be/hViNhhYMC8A
 
 ## Authors
 * I Gede Arya Raditya Parameswara (13520036)
